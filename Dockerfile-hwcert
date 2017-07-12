@@ -1,14 +1,30 @@
 FROM centos:7
 MAINTAINER "Preet" <preet050296@gmail.com>
 
+ENV container docker
+
+#Hack
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == \
+systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+rm -f /lib/systemd/system/multi-user.target.wants/*;\
+rm -f /etc/systemd/system/*.wants/*;\
+rm -f /lib/systemd/system/local-fs.target.wants/*; \
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+rm -f /lib/systemd/system/basic.target.wants/*;\
+rm -f /lib/systemd/system/anaconda.target.wants/*;
+VOLUME [ "/sys/fs/cgroup" ]
+
+# Install anything. The service you want to start must be a SystemD service.
+
 RUN yum update -y
 ADD ./rhcert /root/rhcert
 WORKDIR /root/rhcert
-
 RUN yum install -y wget
 RUN wget http://debuginfo.centos.org/7/x86_64/kernel-debuginfo-3.10.0-514.el7.x86_64.rpm
 RUN wget http://debuginfo.centos.org/7/x86_64/kernel-debuginfo-common-x86_64-3.10.0-514.el7.x86_64.rpm
-RUN yum install kernel-debuginfo-common-x86_64-3.10.0-514.el7.x86_64.rpm kernel-debuginfo-3.10.0-514.el7.x86_64.rpm
- 
-RUN yum install -y *.rpm
+RUN yum install -y kernel-debuginfo-common-x86_64-3.10.0-514.el7.x86_64.rpm kernel-debuginfo-3.10.0-51
+4.el7.x86_64.rpm
 
+RUN yum install -y *.rpm
+CMD ["/usr/sbin/init" ]
